@@ -1,0 +1,23 @@
+{% extends "WhitewashingReviewSquawkBundle::layout.html.twig" %}
+
+{% block content %}
+<div class="well">
+    <h2>Hello {{ app.user.username }}!</h2>
+
+    <p>The following repositories are reviewed in your name:</p>
+
+    <ul>
+    {% for project in app.user.projects %}
+        <li>{{ project.repositoryUrl }}</li>
+    {% endfor %}
+    </ul>
+</div>
+{% endblock %}
+
+{% block sidebar %}
+<div class="well">
+    <h3>Add Project</h3>
+
+    <p>You want to review another project? Enter the repository url and go ahead:</p>
+</div>
+{% endblock %}

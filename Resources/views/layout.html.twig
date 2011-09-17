@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>{%if subtitle is defined %}{{ subtitle }} - {% endif %}Review Squawk</title>
+        <link rel="stylesheet" type="text/css" href="{{ asset('bundles/whitewashingreviewsquawk/bootstrap/bootstrap.css') }}" />
+    </head>
+
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="span16">
+                    <div class="well">
+                        <h1>Review Squawk</h1>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="span10">
+                    {% block content %}{% endblock %}
+                </div>
+                <div class="span6">
+                    {% block sidebar %}{% endblock %}
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,13 @@
+{% extends "WhitewashingReviewSquawkBundle::layout.html.twig" %}
+
+{% block content %}
+<div class="well">
+    <h2>Login or Create User</h2>
+
+    <p>You don't have to create your own account on Review Squawk, we will just connect to your Github account through OAuth.</p>
+
+    <p>If you have already connected your account you can login into your account by authorizing again.</p>
+
+    <a href="{{ path('rs_github_user_authorize') }}">Login through Github</a>
+</div>
+{% endblock %}
