@@ -59,42 +59,60 @@ class RestV3API implements ClientAPI
         $commitUrl = "https://api.github.com/repos/" . $username . "/" . $repository . "/git/commits/" . $sha1;
         $commitResponse = $this->curl->request('GET', $commitUrl);
 
-        $treeUrl = $commitResponse['body']['tree']['url'];
-        $treeResponse = $this->curl->request('GET', $treeUrl . "?recursive=true");
-
-        $parentTreeCommitUrl = $commitResponse['body']['parents'][0]['url']; // TODO: Merge commits
-        $parentTreeCommitResponse =  $this->curl->request('GET', $parentTreeCommitUrl);
-        $parentTreeUrl = $parentTreeCommitResponse['body']['tree']['url'];
-        $parentTreeResponse = $this->curl->request('GET', $parentTreeUrl);
+        $isInitialCommit = true;
+        if (isset($commitResponse['body']['parents'][0])) {
+            $parentSha = $commitResponse['body']['parents'][0]['sha'];
+            $isInitialCommit = false;
+        }
 
         $diffs = array();
-        foreach ($treeResponse['body']['tree'] AS $file) {
-            if (substr($file['path'], -4) == ".php") {
-                foreach ($parentTreeResponse['body']['tree'] AS $parentFile) {
-                    if ($file['path'] == $parentFile['path'] && $file['sha'] != $parentFile['sha']) {
-                        $oldCodeResponse = $this->curl->request('GET', $parentFile['url']);
-                        $newCodeResponse = $this->curl->request('GET', $file['url']);
+        if ($isInitialCommit) {
+            $treeUrl = $commitResponse['body']['tree']['url'];
+            $treeResponse = $this->curl->request('GET', $treeUrl . "?recursive=true");
 
-                        if ($oldCodeResponse['body']['encoding'] == 'base64') {
-                            $oldCode = base64_decode($oldCodeResponse['body']['content']);
-                        } else {
-                            $oldCode = $oldCodeResponse['body']['content'];
+            foreach ($treeResponse['body']['tree'] AS $file) {
+                if (substr($file['path'], -4) == ".php") {
+                    $newCode = $this->getBlob($file['url']);
+
+                    $diffs[] = new Diff($file['path'], "", $newCode);
+                }
+            }
+        } else {
+            $parentTreeUrl = $commitResponse['body']['tree']['url'];
+            $parentTreeResponse = $this->curl->request('GET', $parentTreeUrl . "?recursive=true");
+
+            $compareUrl = "https://api.github.com/repos/" . $username . "/" . $repository . "/compare/" . $sha1 . "..." . $parentSha;
+            $compareResponse = $this->curl->request('GET', $compareUrl);
+
+            foreach ($parentTreeResponse['body']['tree'] AS $parentTreeFile) {
+                if ( substr($parentTreeFile['path'], -4) == ".php" ) {
+                    foreach ($compareResponse['body']['files'] AS $compareFile) {
+                        if ($compareFile['filename'] == $parentTreeFile['path']) {
+                            $diffs[] = new Diff(
+                                $parentTreeFile['path'],
+                                $this->getBlob($parentTreeFile['url']),
+                                $this->getBlob($compareFile['sha']),
+                                $compareFile['patch']
+                            );
                         }
-
-                        if ($newCodeResponse['body']['encoding'] == 'base64') {
-                            $newCode = base64_decode($newCodeResponse['body']['content']);
-                        } else {
-                            $newCode = $newCodeResponse['body']['content'];
-                        }
-
-                        $diffs[] = new Diff($file['path'], $oldCode, $newCode);
-                        break;
                     }
                 }
             }
         }
 
         return $diffs;
+    }
+
+    private function getBlob($url)
+    {
+        $codeResponse = $this->curl->request('GET', $url);
+
+        if ($codeResponse['body']['encoding'] == 'base64') {
+            $code = base64_decode($codeResponse['body']['content']);
+        } else {
+            $code = $codeResponse['body']['content'];
+        }
+        return $code;
     }
 
     public function claimOAuthAccessToken($temporaryCode)
@@ -116,6 +134,18 @@ class RestV3API implements ClientAPI
     public function getCurrentUser($accessToken)
     {
         $response = $this->curl->request('GET', 'https://api.github.com/user?access_token='. $accessToken);
+        return $response['body'];
+    }
+
+    public function getProject($username, $repository)
+    {
+        $response = $this->curl->request('GET', 'https://api.github.com/repos/'. $username . '/' . $repository);
+        return $response['body'];
+    }
+
+    public function getCommits($username, $repository)
+    {
+        $response = $this->curl->request('GET', 'https://api.github.com/repos/'. $username . '/' . $repository . '/commits');
         return $response['body'];
     }
 }

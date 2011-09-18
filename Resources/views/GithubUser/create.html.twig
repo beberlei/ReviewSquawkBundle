@@ -2,12 +2,62 @@
 
 {% block content %}
 <div class="well">
+    <h2>What is this?</h2>
+
+    <p>
+        This platform provides static code analysis as a service. Currently it allows to automatically
+        review commits on Github for PHP Coding Standard violations, however more tools and languages are
+        planned for the future.
+    </p>
+</div>
+
+<div class="well">
+    <h2>Screenshots</h2>
+
+    <a href="{{ asset('bundles/whitewashingreviewsquawk/images/screen-1.png')}}"><img src="{{ asset('bundles/whitewashingreviewsquawk/images/screen-1.png')}}" width="170" /></a>
+    <a href="{{ asset('bundles/whitewashingreviewsquawk/images/screen-2.png')}}"><img src="{{ asset('bundles/whitewashingreviewsquawk/images/screen-2.png')}}" width="170" /></a>
+    <a href="{{ asset('bundles/whitewashingreviewsquawk/images/screen-3.png')}}"><img src="{{ asset('bundles/whitewashingreviewsquawk/images/screen-3.png')}}" width="170" /></a>
+
+    <h2>Example Commits</h2>
+
+    <ul>
+        <li><a href="https://github.com/beberlei/Zend_Db-Adapter-for-ext-mysql/commit/6657a987abb388e9b7aca2866434a13c74942e05#L1R59">Zend_Db-Adapter-for-ext-mysql</a></li>
+    </ul>
+</div>
+
+<div class="well">
     <h2>Login or Create User</h2>
 
-    <p>You don't have to create your own account on Review Squawk, we will just connect to your Github account through OAuth.</p>
+    <p>You don't have to create your own account, we will just connect to your Github account through OAuth.
+    If you have already connected your account you can login into your account by authorizing again.</p>
 
-    <p>If you have already connected your account you can login into your account by authorizing again.</p>
+    {% if closedBeta %}
+    <div class="alert-message error">
+    We are currently in closed beta. You can login and grant us access to your Github account, but we will
+    only accept some pre-selected users. Come back later or follow <a href="http://twitter.com/beberlei">@beberlei</a>
+    on Twitter to get more information.
+    </div>
+    {% endif %}
 
-    <a href="{{ path('rs_github_user_authorize') }}">Login through Github</a>
+    <form method="get" action="{{ path('rs_github_user_authorize') }}">
+        <div align="center">
+            <button class="btn danger">Login through Github</button>
+        </div>
+    </form>
+
+    <h4>What are the risks?</h4>
+
+    <p>
+        <span class="label warning">Warning</span> We will request a "public"-scope token from Github to access functionality of your account.
+        That means we have no access to your private repositories or any of your user/billing information.
+        However the access token granted allows all kind of write operations on public repositories and we have to
+        save this token to allow you to automatically review commits.
+    </p>
+
+    <p>
+        If you don't trust us with this information please don't use this service. We are talking to Github
+        to grant commenting rights without that powerful rights.
+    </p>
 </div>
+
 {% endblock %}

@@ -40,7 +40,9 @@ class GithubUserController extends Controller
      */
     public function createAction()
     {
-        return array();
+        $closedBeta = $this->container->getParameter('whitewashing.review_squawk.closed_beta');
+
+        return array('closedBeta' => $closedBeta);
     }
 
     /**
@@ -72,15 +74,21 @@ class GithubUserController extends Controller
         $userRepository = $em->getRepository('Whitewashing\ReviewSquawkBundle\Entity\User');
         $user = $userRepository->findOneBy(array('name' => $userDetails['login']));
 
+        $closedBeta = $this->container->getParameter('whitewashing.review_squawk.closed_beta');
         if (!$user) {
+            if ($closedBeta) {
+                $this->container->get('session')->setFlash('rs', 'Closed Beta, you cannot register.');
+                $this->redirect($this->generateUrl('rs_github_user_create'));
+            }
+
             $user = new \Whitewashing\ReviewSquawkBundle\Entity\User();
-            $user->setAccessToken($accessToken);
             $user->setUsername($userDetails['login']);
 
             $em->persist($user);
-            $em->flush();
-
         }
+        $user->setAccessToken($accessToken);
+        $em->flush();
+
         $this->authenticateUser($user);
 
         return $this->redirect($this->generateUrl('rs_github_user_dashboard'));
@@ -91,5 +99,4 @@ class GithubUserController extends Controller
         $token = new UsernamePasswordToken($user, null, 'squawkd', $user->getRoles());
         $this->container->get('security.context')->setToken($token);
     }
-
 }

@@ -27,4 +27,8 @@ interface ClientAPI
     public function commentPullRequest($accessToken, $username, $repository, $prId, $sha1, $path, $line, $message);
 
     public function getCurrentUser($accessToken);
+
+    public function getProject($username, $repository);
+
+    public function getCommits($username, $repository);
 }

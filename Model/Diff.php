@@ -27,12 +27,23 @@ class Diff
      * @var string
      */
     private $newCode;
+    /**
+     * @var string
+     */
+    private $diff;
 
-    public function __construct($path, $oldCode, $newCode)
+    /**
+     * @param $path
+     * @param $oldCode
+     * @param $newCode
+     * @param $diff
+     */
+    public function __construct($path, $oldCode, $newCode, $diff = "")
     {
         $this->path = $path;
         $this->oldCode = $oldCode;
         $this->newCode = $newCode;
+        $this->diff = $diff;
     }
 
     public function getPath()
@@ -48,5 +59,31 @@ class Diff
     public function getNewCode()
     {
         return $this->newCode;
+    }
+
+    public function getDiffPositionForLine($linePos)
+    {
+        if (strlen($this->diff) == 0) {
+            return $linePos;
+        } else {
+            $lines = explode("\n", str_replace("\r\n", "\n", $this->diff));
+
+            $pos = 0;
+            $currentLine = 0;
+            for ($i = 2; $i < count($lines); $i++) {
+                if (preg_match('(@@ \-([0-9]+),([0-9]+) \+([0-9]+),([0-9]+))', $lines[$i], $match)) {
+                    var_dump($match);
+                    $currentLine = $match[1];
+                } else {
+                    if ($linePos == $currentLine) {
+                        return $pos;
+                    }
+
+                    $currentLine++;
+                    $pos++;
+                }
+            }
+            return false;
+        }
     }
 }

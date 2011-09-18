@@ -36,8 +36,8 @@ class Curl
         }
 
         $ret = curl_exec($this->ch);
-        if (curl_getinfo($this->ch, CURLINFO_HTTP_CODE) >= 400) {
-            throw new \RuntimeException("Curl request failed to " . $url);
+        if ( ($code = curl_getinfo($this->ch, CURLINFO_HTTP_CODE)) >= 400) {
+            throw new \RuntimeException("Curl request failed to " . $url.": ".$code . " " . $ret);
         }
 
         if (in_array(substr($ret, 0, 1), array("{", "["))) {

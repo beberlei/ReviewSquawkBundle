@@ -6,18 +6,20 @@
 
     <p>The following repositories are reviewed in your name:</p>
 
-    <ul>
+    {% if app.user.projects|length > 0 %}
+    <table>
     {% for project in app.user.projects %}
-        <li>{{ project.repositoryUrl }}</li>
+        <tr>
+            <td><a href="{{ path('rs_github_project_show', {'id': project.id}) }}">{{ project.repositoryUrl }}</a></td>
+            <td>{{ project.codingStandard }}</td>
+        </tr>
     {% endfor %}
-    </ul>
-</div>
-{% endblock %}
+    </table>
 
-{% block sidebar %}
-<div class="well">
-    <h3>Add Project</h3>
-
-    <p>You want to review another project? Enter the repository url and go ahead:</p>
+    <p>You want to review another project? <a href="{{ path('rs_github_project_create') }}">Register one now</a>.</p>
+    {% else %}
+    <p>None! Get going and <a href="{{ path('rs_github_project_create') }}">register a new project now</a>.</p>
+    {% endif %}
 </div>
+
 {% endblock %}

@@ -4,6 +4,7 @@ namespace Whitewashing\ReviewSquawkBundle\Tests\Model;
 
 use Whitewashing\ReviewSquawkBundle\Model\Diff;
 use Whitewashing\ReviewSquawkBundle\Model\CodeSnifferService;
+use Whitewashing\ReviewSquawkBundle\Model\Project;
 
 class CodeSnifferServiceTest extends \PHPUnit_Framework_TestCase
 {
@@ -11,13 +12,14 @@ class CodeSnifferServiceTest extends \PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->service = new CodeSnifferService('Zend');
+        $this->service = new CodeSnifferService();
+        $this->project = new Project("http", "asdf", "Zend", true);
     }
 
     public function testScanSimpleFilesNoViolation()
     {
         $diff = new Diff("/foo.php", "<?php\nphpinfo();", "<?php\necho 'Hello World';");
-        $violations = $this->service->scan($diff);
+        $violations = $this->service->scan($this->project, $diff);
 
         $this->assertEquals(0, count($violations));
     }
@@ -27,7 +29,7 @@ class CodeSnifferServiceTest extends \PHPUnit_Framework_TestCase
         $longstring = '$a = "' . str_repeat("a", 140) . '";';
 
         $diff = new Diff("/foo.php", "<?php\n" . $longstring, "<?php\n" . $longstring);
-        $violations = $this->service->scan($diff);
+        $violations = $this->service->scan($this->project, $diff);
 
         $this->assertEquals(0, count($violations));
     }
@@ -37,7 +39,7 @@ class CodeSnifferServiceTest extends \PHPUnit_Framework_TestCase
         $longstring = '$a = "' . str_repeat("a", 140) . '";' . "\n";
         
         $diff = new Diff("/foo.php", "<?php\nphpinfo();", "<?php\n" . $longstring);
-        $violations = $this->service->scan($diff);
+        $violations = $this->service->scan($this->project, $diff);
 
         $this->assertEquals(1, count($violations));
         $this->assertContainsOnly('Whitewashing\ReviewSquawkBundle\Model\Violation', $violations);
@@ -50,7 +52,7 @@ class CodeSnifferServiceTest extends \PHPUnit_Framework_TestCase
         $longstringNew = '$a = "' . str_repeat("a", 142) . '";' . "\n";
 
         $diff = new Diff("/foo.php", "<?php\n" . $longstring, "<?php\n" . $longstringNew);
-        $violations = $this->service->scan($diff);
+        $violations = $this->service->scan($this->project, $diff);
 
         $this->assertEquals(1, count($violations));
         $this->assertContainsOnly('Whitewashing\ReviewSquawkBundle\Model\Violation', $violations);

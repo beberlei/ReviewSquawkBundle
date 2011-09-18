@@ -31,7 +31,7 @@ class Commit
 
     /**
      * @ORM\Id
-     * @ORM\ManyToOne(targetEntity="Project")
+     * @ORM\ManyToOne(targetEntity="Project", inversedBy="commits")
      * @var Project
      */
     protected $project;
@@ -49,6 +49,11 @@ class Commit
      */
     protected $reviewDate;
 
+    /**
+     * @param string $revision
+     * @param Project $project
+     * @param User $reviewer
+     */
     public function __construct($revision, $project, $reviewer)
     {
         $this->revision = $revision;

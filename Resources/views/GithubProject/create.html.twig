@@ -4,10 +4,32 @@
 <div class="well">
     <h1>Create Github Project</h1>
 
-    <p>You can send the review squawk to your public github repositories.</p>
+    <p>You can review your public github repositories.</p>
 
-    <h2>Please enter the url of your github project page.</h2>
+    <h3>Please enter the url of your github project page.</h3>
 
-    
+    <form method="post" action="{{ path('rs_github_project_create') }}">
+
+        <div class="row">
+            <div class="span-9 ">
+                {% set errors = form_errors(projectForm) %}
+                {% if errors|length > 0 %}
+                <div class="alert-message block-message error">
+                    {{ errors|raw }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="span5">{{ form_widget(projectForm.repositoryUrl, {"attr": {"class": "span5"}}) }}</div>
+            <div class="span2">{{ form_widget(projectForm.codingStandard, {"attr": {"class": "span2"}}) }}</div>
+            <div class="span2">
+                <button class="btn success">Register</button>
+            </div>
+        </div>
+
+        {{ form_rest(projectForm) }}
+    </form>
 </div>
 {% endblock %}

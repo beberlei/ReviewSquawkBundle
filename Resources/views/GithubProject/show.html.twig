@@ -1,0 +1,33 @@
+{% extends "WhitewashingReviewSquawkBundle::layout.html.twig" %}
+
+{% block content %}
+<div class="well">
+    <h2>{{ project.name }}</h2>
+
+    <strong>Repository Location:</strong> {{ project.repositoryUrl }}
+</div>
+
+<div class="well">
+    <table>
+        <tr>
+            
+        </tr>
+    {% for commit in commits %}
+    <tr>
+        <td>
+        {% spaceless %}
+            {% if project.hasCommit(commit.sha) %}
+            Yes
+            {% else %}
+            <a href="{{ path('rs_review_commit_new', {'projectId': project.id, 'commitId': commit.sha})}}">No</a>
+            {% endif %}
+        {% endspaceless %}
+        </td>
+        <td>{{commit.sha}}</td>
+        <td>{{commit.commit.committer.name}}</td>
+        <td>{{commit.commit.committer.date|date('Y/m/d')}}
+    </tr>
+    {% endfor %}
+    </table>
+</div>
+{% endblock %}

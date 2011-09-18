@@ -1,0 +1,16 @@
+services:
+  whitewashing.review_squawk.github_client:
+    class: Whitewashing\ReviewSquawkBundle\Model\Github\RestV3API
+    arguments:
+      - "%whitewashing.review_squawk.github.client_id%"
+      - "%whitewashing.review_squawk.github.client_secret%"
+
+  whitewashing.review_squawk.validator.githubproject:
+    class: Whitewashing\ReviewSquawkBundle\Validator\GithubProjectValidator
+    arguments:
+      - "@whitewashing.review_squawk.github_client"
+    tags:
+        - { name: validator.constraint_validator, alias: "githubproject" }
+
+  whitewashing.review_squawk.code_sniffer:
+    class: Whitewashing\ReviewSquawkBundle\Model\CodeSnifferService

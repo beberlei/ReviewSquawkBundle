@@ -1,0 +1,17 @@
+{% extends "WhitewashingReviewSquawkBundle::layout.html.twig" %}
+
+{% block content %}
+
+<div class="well">
+    <h2>Review commit</h2>
+
+    <p>{{ project.name }} / {{ commitId }}</p>
+
+    <form method="post" action="{{ path('rs_review_commit', {'projectId': project.id}) }}">
+        <input type="hidden" name="commitId" value="{{commitId}}">
+
+        <button class="btn success">Start Review</button>
+    </form>
+</div>
+
+{% endblock %}

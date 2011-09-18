@@ -15,15 +15,9 @@ namespace Whitewashing\ReviewSquawkBundle\Model;
 
 class CodeSnifferService
 {
+    private static $standards;
     private $standard;
-
     private $showWarnings;
-
-    public function __construct($standard, $showWarnings = false)
-    {
-        $this->standard = $standard;
-        $this->showWarnings = $showWarnings;
-    }
 
     /**
      * Scan the diff and report all new violations.
@@ -31,8 +25,11 @@ class CodeSnifferService
      * @param Diff $diff
      * @return Violation[]
      */
-    public function scan(Diff $diff)
+    public function scan(Project $project, Diff $diff)
     {
+        $this->standard = $project->getCodingStandard();
+        $this->showWarnings = $project->getShowWarnings();
+
         $oldReport = $this->getCodeReport($diff->getPath(), $diff->getOldCode());
         $newReport = $this->getCodeReport($diff->getPath(), $diff->getNewCode());
 
@@ -74,7 +71,20 @@ class CodeSnifferService
 
         $sniffer->populateTokenListeners();
 
-        $sniffer->processFile($file, $code);
-        return $sniffer->prepareErrorReport($this->showWarnings);
+        if (strlen($code)) {
+            $sniffer->processFile($file, $code);
+            return $sniffer->prepareErrorReport($this->showWarnings);
+        } else {
+            return array('totals' => array('warnings' => 0, 'errors' => 0), 'files' => array($file => array('messages' => array())));
+        }
+    }
+
+    static public function getInstalledStandards()
+    {
+        if (self::$standards === null) {
+            $cs = new \PHP_CodeSniffer();
+            self::$standards = $cs->getInstalledStandards();
+        }
+        return self::$standards;
     }
 }

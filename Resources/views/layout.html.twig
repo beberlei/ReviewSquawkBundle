@@ -8,20 +8,22 @@
     <body>
         <div class="container">
             <div class="row">
-                <div class="span16">
-                    <div class="well">
-                        <h1>Review Squawk</h1>
-                    </div>
+                <div class="span3">&nbsp;</div>
+                <div class="span10">
+                    <h1 id="beta"><a href="{{ path('rs_github_user_dashboard')}}">CS Review your Github commits</a></h1>
                 </div>
+                <div class="span3">&nbsp;</div>
             </div>
 
             <div class="row">
+                <div class="span3">&nbsp;</div>
                 <div class="span10">
                     {% block content %}{% endblock %}
                 </div>
-                <div class="span6">
+
                     {% block sidebar %}{% endblock %}
                 </div>
+                <div class="span3">&nbsp;</div>
             </div>
         </div>
     </body>
