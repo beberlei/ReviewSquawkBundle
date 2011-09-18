@@ -45,9 +45,7 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $clientId = $this->getContainer()->getParameter('whitewashing.review_squawk.github.client_id');
-        $clientSecret = $this->getContainer()->getParameter('whitewashing.review_squawk.github.client_secret');
-        $api = new \Whitewashing\ReviewSquawkBundle\Model\Github\RestV3API($clientId, $clientSecret);
+        $api = $this->getContainer()->get('whitewashing.review_squawk.github_client');
 
         $api->commentCommit(
             $input->getArgument('access_token'),

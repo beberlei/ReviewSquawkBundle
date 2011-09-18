@@ -42,15 +42,14 @@ EOT
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $clientId = $this->getContainer()->getParameter('whitewashing.review_squawk.github.client_id');
-        $clientSecret = $this->getContainer()->getParameter('whitewashing.review_squawk.github.client_secret');
-        $api = new \Whitewashing\ReviewSquawkBundle\Model\Github\RestV3API($clientId, $clientSecret);
+        $api = $this->getContainer()->get('whitewashing.review_squawk.github_client');
         
         $diffs = $api->getCommitDiffs($input->getArgument('username'), $input->getArgument('repo'), $input->getArgument('sha1'));
 
         foreach ($diffs AS $diff) {
-            $snifferService = new \Whitewashing\ReviewSquawkBundle\Model\CodeSnifferService("Zend");
-            $violations = $snifferService->scan($diff);
+            $project = new \Whitewashing\ReviewSquawkBundle\Model\Project("http", "token", "Zend", true);
+            $snifferService = new \Whitewashing\ReviewSquawkBundle\Model\CodeSnifferService();
+            $violations = $snifferService->scan($project, $diff);
 
             foreach ($violations AS $violation) {
                 $output->writeln($violation->getPath() . ":" . $violation->getLine()." " . $violation->getMessage());
