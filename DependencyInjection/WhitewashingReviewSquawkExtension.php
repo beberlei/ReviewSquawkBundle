@@ -22,7 +22,11 @@ class WhitewashingReviewSquawkExtension extends Extension
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
 
-        $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
-        $loader->load('services.xml');
+        $container->setParameter('whitewashing.review_squawk.closed_beta', $config['closed_beta']);
+        $container->setParameter('whitewashing.review_squawk.github.client_id', $config['github_client_id']);
+        $container->setParameter('whitewashing.review_squawk.github.client_secret', $config['github_client_secret']);
+
+        $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+        $loader->load('services.yml');
     }
 }
