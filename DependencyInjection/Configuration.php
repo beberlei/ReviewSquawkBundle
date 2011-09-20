@@ -24,7 +24,7 @@ class Configuration implements ConfigurationInterface
                 ->scalarNode('github_client_id')->isRequired()->end()
                 ->scalarNode('github_client_secret')->isRequired()->end()
                 ->scalarNode('closed_beta')->isRequired()->end()
-            ->end();
+                ->end();
 
         return $treeBuilder;
     }

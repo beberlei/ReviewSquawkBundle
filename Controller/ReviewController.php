@@ -57,62 +57,31 @@ class ReviewController extends Controller
     public function postCommitsAction($projectId)
     {
         $project = $this->getProject($projectId);
-
         $request = $this->getRequest();
+        $currentUser = $this->container->get('security.context')->getToken()->getUser();
         $commitId = $request->request->get('commitId');
 
         if (!$commitId) {
             throw new HttpException(400, "Bad request with 'commitId' parameter missing.");
         }
 
+        if ($project->getUser() != $currentUser) {
+            throw new AccessDeniedHttpException("Invalid user to review this commit.");
+        }
+
+        if ($response = $this->commitExists($project->getId(), $commitId)) {
+            return $response;
+        }
+
+        $commit = new Commit($commitId, $project, $currentUser);
+
         $em = $this->container->get('doctrine.orm.default_entity_manager');
-        $commit = new Commit($commitId, $project, $this->container->get('security.context')->getToken()->getUser());
         $em->persist($commit);
         $em->flush();
 
-        $parts = explode("/", $project->getRepositoryUrl());
-        $repository = array_pop($parts);
-        $userOrg = array_pop($parts);
-
-        /** @var $api \Whitewashing\ReviewSquawkBundle\Model\Github\ClientAPI */
-        $api = $this->container->get('whitewashing.review_squawk.github_client');
-        $diffs = $api->getCommitDiffs($userOrg, $repository, $commit->getRevision());
-
-        $cs = $this->container->get('whitewashing.review_squawk.code_sniffer');
-        $comments = array();
-        $positions = array();
-        foreach ($diffs AS $diff) {
-            $violations = $cs->scan($project->toProjectStruct(), $diff);
-
-            foreach ($violations AS $violation) {
-                $position = $diff->getDiffPositionForLine($violation->getLine());
-                if ($position === false) {
-                    continue;
-                }
-                $positions[$violation->getPath()][$violation->getLine()] = $position;
-
-                /** @var $violation \Whitewashing\ReviewSquawkBundle\Model\Violation */
-                if (!isset($comments[$violation->getPath()][$violation->getLine()])) {
-                    $comments[$violation->getPath()][$violation->getLine()] = "";
-                }
-                $comments[$violation->getPath()][$violation->getLine()] .= $violation->getMessage() . "\n";
-            }
-        }
-
-        foreach ($comments AS $path => $fileComments) {
-            foreach ($fileComments AS $line => $comment) {
-                $api->commentCommit(
-                    $project->getUser()->getAccessToken(),
-                    $userOrg,
-                    $repository,
-                    $commit->getRevision(),
-                    $path,
-                    $line,
-                    $positions[$path][$line],
-                    rtrim($comment)
-                );
-            }
-        }
+        /* @var $githubService \Whitewashing\ReviewSquawkBundle\Model\GithubReviewService */
+        $githubService = $this->container->get('whitewashing.review_squawk.github_review_service');
+        $githubService->reviewCommit($project->toProjectStruct(), $commit->getRevision());
 
         return $this->redirect($this->generateUrl('rs_github_project_show', array('id' => $project->getId())));
     }
@@ -127,6 +96,23 @@ class ReviewController extends Controller
     public function newCommitAction($projectId, $commitId)
     {
         $project = $this->getProject($projectId);
+
+        if ($response = $this->commitExists($project->getId(), $commitId)) {
+            return $response;
+        }
+
         return array('project' => $project, 'commitId' => $commitId);
+    }
+
+    private function commitExists($projectId, $commitId)
+    {
+        $em = $this->container->get('doctrine.orm.default_entity_manager');
+        $exists = $em->getRepository('Whitewashing\ReviewSquawkBundle\Entity\Commit')
+                     ->findOneBy(array('project' => $projectId, 'revision' => $commitId));
+        if ($exists) {
+            $this->container->get('session')->setFlash('rs', 'Commit ' . $commitId . ' was already reviewed.');
+            return $this->redirect($this->generateUrl('rs_github_project_show', array('id' => $projectId)));
+        }
+        return null;
     }
 }

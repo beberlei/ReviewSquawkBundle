@@ -35,7 +35,7 @@ class User implements UserInterface
     protected $name;
 
     /**
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="cryptstring")
      * @var string
      */
     protected $accessToken;
