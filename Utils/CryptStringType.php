@@ -4,14 +4,24 @@ namespace Whitewashing\ReviewSquawkBundle\Utils;
 
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
+use \Doctrine\DBAL\Types\ConversionException;
 
 class CryptStringType extends Type
 {
+    /**
+     * @var string
+     */
+    static public $key = "";
+
     public function convertToDatabaseValue($value, AbstractPlatform $platform)
     {
         if ($value === null) return null;
 
-        return self::encrypt($value, $_SERVER['doctrineCryptStringKey']);
+        if (!is_string(self::$key) || strlen(self::$key) == 0) {
+            throw new ConversionException("Conversion failed, encryption key is missing!");
+        }
+
+        return self::encrypt($value, self::$key);
     }
 
     /**
@@ -24,7 +34,11 @@ class CryptStringType extends Type
      */
     public function convertToPHPValue($value, AbstractPlatform $platform)
     {
-        return self::decrypt($value, $_SERVER['doctrineCryptStringKey']);
+        if (!is_string(self::$key) || strlen(self::$key) == 0) {
+            throw new ConversionException("Conversion failed, encryption key is missing!");
+        }
+
+        return self::decrypt($value, self::$key);
     }
 
     static function encrypt($text, $key)
