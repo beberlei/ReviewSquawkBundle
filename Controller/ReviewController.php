@@ -24,9 +24,49 @@ use Whitewashing\ReviewSquawkBundle\Entity\Commit;
 
 class ReviewController extends Controller
 {
-    public function githubCommitsAction()
+    /**
+     * @Route("/project/{projectId}/github/post-receive", name="rs_project_github_postrecieve")
+     * @Method("POST")
+     * @throws \Symfony\Bundle\FrameworkBundle\Controller\NotFoundHttpException
+     * @return void
+     */
+    public function githubCommitsAction($projectId)
     {
-        
+        $request =  $this->getRequest();
+        $em = $this->container->get('doctrine.orm.default_entity_manager');
+        $project = $em->findOneBy(array('token' => $request->get('token')));
+
+        if (!$project || $project->getId() != $projectId) {
+            throw $this->createNotFoundException("No project found.");
+        }
+
+        if (!$request->request->has('payload')) {
+            throw \RuntimeEception("No payload given");
+        }
+
+        $payload = $request->request->get('payload');
+        if (strpos($payload, "{") === 0) {
+            $payload = json_encode($payload, true);
+        } else {
+            throw \RuntimeException("Invalid payload given");
+        }
+
+        $em = $this->container->get('doctrine.orm.default_entity_manager');
+        foreach ($payload['commits'] AS $commitData) {
+            if ($this->commitExists($project->getId(), $commitData['id'])) {
+                continue;
+            }
+
+            $commit = new Commit($commitData['id'], $project, $project->getUser());
+            $em->persist($commit);
+            
+            /* @var $githubService \Whitewashing\ReviewSquawkBundle\Model\GithubReviewService */
+            $githubService = $this->container->get('whitewashing.review_squawk.github_review_service');
+            $githubService->reviewCommit($project->toProjectStruct(), $commit->getRevision());
+        }
+        $em->flush();
+
+        return new Response('{"ok": true}', 200);
     }
 
     /**
@@ -55,8 +95,9 @@ class ReviewController extends Controller
             throw new AccessDeniedHttpException("Invalid user to review this commit.");
         }
 
-        if ($response = $this->commitExists($project->getId(), $commitId)) {
-            return $response;
+        if ($this->commitExists($project->getId(), $commitId)) {
+            $this->container->get('session')->setFlash('rs', 'Commit ' . $commitId . ' was already reviewed.');
+            return $this->redirect($this->generateUrl('rs_github_project_show', array('id' => $project->getId())));
         }
 
         $commit = new Commit($commitId, $project, $currentUser);
@@ -88,8 +129,9 @@ class ReviewController extends Controller
             throw new AccessDeniedHttpException("Invalid user to review this commit.");
         }
 
-        if ($response = $this->commitExists($project->getId(), $commitId)) {
-            return $response;
+        if ($this->commitExists($project->getId(), $commitId)) {
+            $this->container->get('session')->setFlash('rs', 'Commit ' . $commitId . ' was already reviewed.');
+            return $this->redirect($this->generateUrl('rs_github_project_show', array('id' => $project->getId())));
         }
 
         return array('project' => $project, 'commitId' => $commitId);
@@ -141,10 +183,6 @@ class ReviewController extends Controller
         $em = $this->container->get('doctrine.orm.default_entity_manager');
         $exists = $em->getRepository('Whitewashing\ReviewSquawkBundle\Entity\Commit')
                      ->findOneBy(array('project' => $projectId, 'revision' => $commitId));
-        if ($exists) {
-            $this->container->get('session')->setFlash('rs', 'Commit ' . $commitId . ' was already reviewed.');
-            return $this->redirect($this->generateUrl('rs_github_project_show', array('id' => $projectId)));
-        }
-        return null;
+        return ($exists) ? true : false;
     }
 }

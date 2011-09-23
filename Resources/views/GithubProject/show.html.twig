@@ -27,6 +27,9 @@
         <td>{{commit.commit.committer.name}}</td>
         <td>{{commit.commit.committer.date|date('Y/m/d')}}
     </tr>
+    <tr>
+        <td colspan="4"><input type="text" name="post-recieve-hook" value="{{ path('rs_project_github_postrecieve', {'projectId': project.id, 'token': project.token }) }}" /></td>
+    </tr>
     {% endfor %}
     </table>
 </div>

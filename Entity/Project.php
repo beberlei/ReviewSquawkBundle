@@ -164,4 +164,9 @@ class Project
     {
         $this->token = sha1(microtime(true) . uniqid('', true));
     }
+
+    public function getToken()
+    {
+        return $this->token;
+    }
 }
