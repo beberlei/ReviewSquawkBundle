@@ -54,18 +54,14 @@ class GithubProjectController extends Controller
     public function showAction($id)
     {
         $em = $this->container->get('doctrine.orm.default_entity_manager');
-        $project = $em->find('Whitewashing\ReviewSquawkBundle\Entity\PRoject', $id);
+        $project = $em->find('Whitewashing\ReviewSquawkBundle\Entity\Project', $id);
 
         if (!$project) {
             throw $this->createNotFoundException('No project found with this id.');
         }
 
-        $parts = explode("/", $project->getRepositoryurl());
-        $repository = array_pop($parts);
-        $userOrg = array_pop($parts);
-
         $api = $this->container->get('whitewashing.review_squawk.github_client');
-        $commits = $api->getCommits($userOrg, $repository);
+        $commits = $api->getCommits($project->getRepositoryUrl());
 
         return array('project' => $project, 'commits' => $commits);
     }

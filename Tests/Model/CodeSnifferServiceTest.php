@@ -43,7 +43,7 @@ class CodeSnifferServiceTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(1, count($violations));
         $this->assertContainsOnly('Whitewashing\ReviewSquawkBundle\Model\Violation', $violations);
-        $this->assertEquals('Zend.Files.LineLengthSniff: Line exceeds maximum limit of 120 characters; contains 149 characters', $violations[0]->getMessage());
+        $this->assertEquals('Generic.Files.LineLength.MaxExceeded: Line exceeds maximum limit of 100 characters; contains 149 characters', $violations[0]->getMessage());
     }
 
     public function testChangedViolationsEmitted()
@@ -56,6 +56,6 @@ class CodeSnifferServiceTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(1, count($violations));
         $this->assertContainsOnly('Whitewashing\ReviewSquawkBundle\Model\Violation', $violations);
-        $this->assertEquals('Zend.Files.LineLengthSniff: Line exceeds maximum limit of 120 characters; contains 151 characters', $violations[0]->getMessage());
+        $this->assertEquals('Generic.Files.LineLength.MaxExceeded: Line exceeds maximum limit of 100 characters; contains 151 characters', $violations[0]->getMessage());
     }
 }

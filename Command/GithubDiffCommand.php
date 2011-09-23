@@ -28,8 +28,7 @@ class GithubDiffCommand extends ContainerAwareCommand
         $this
             ->setName('review-squawk:github:diff')
             ->setDescription('Create and vizualize the diffs of a Github commit')
-            ->addArgument('username', InputArgument::REQUIRED, 'User/Organization')
-            ->addArgument('repo', InputArgument::REQUIRED, 'Repository')
+            ->addArgument('url', InputArgument::REQUIRED, 'Github Url')
             ->addArgument('sha1', InputArgument::REQUIRED, 'Commit Sha1')
             ->setHelp(<<<EOT
 The <info>review-squawk:github:diff</info> command creates and vizualizes the diff
@@ -44,7 +43,7 @@ EOT
     {
         $api = $this->getContainer()->get('whitewashing.review_squawk.github_client');
         
-        $diffs = $api->getCommitDiffs($input->getArgument('username'), $input->getArgument('repo'), $input->getArgument('sha1'));
+        $diffs = $api->getCommitDiffs($input->getArgument('url'), $input->getArgument('sha1'));
 
         foreach ($diffs AS $diff) {
             $project = new \Whitewashing\ReviewSquawkBundle\Model\Project("http", "token", "Zend", true);

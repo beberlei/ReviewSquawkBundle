@@ -37,16 +37,25 @@ class CodeSnifferService
             return array();
         }
 
-        $oldViolations = $oldReport['files'][$diff->getPath()]['messages'];
-        $newViolations = $newReport['files'][$diff->getPath()]['messages'];
+        $foundViolations = $this->computeNewViolations($diff->getPath(), $oldReport['errors'], $newReport['errors']);
 
+        if ($this->showWarnings) {
+            foreach ($this->computeNewViolations($diff->getPath(), $oldReport['warnings'], $newReport['warnings']) AS $violation) {
+                $foundViolations[] = $violation;
+            }
+        }
+        return $foundViolations;
+    }
+
+    private function computeNewViolations($path, $oldViolations, $newViolations)
+    {
         $foundViolations = array();
         foreach ($newViolations AS $line => $violations) {
             foreach ($violations AS $column => $messages) {
                 if (!isset($oldViolations[$line][$column])) {
                     $oldViolations[$line][$column] = array();
                 }
-                
+
                 // both old and new code have violations at that line and column, are they the same?
                 foreach ($messages AS $idx => $message) {
                     foreach ($oldViolations[$line][$column] AS $oldMessage) {
@@ -55,7 +64,7 @@ class CodeSnifferService
                         }
                     }
 
-                    $foundViolations[] = new Violation($diff->getPath(), $line, $message['source'].": " . $message['message']);
+                    $foundViolations[] = new Violation($path, $line, $message['source'].": " . $message['message']);
                 }
             }
         }
@@ -68,14 +77,18 @@ class CodeSnifferService
         $cli = new \PHP_CodeSniffer_CLI();
         $sniffer = new \PHP_CodeSniffer();
         $sniffer->setTokenListeners($this->standard, array());
-
+        $sniffer->populateCustomRules($this->standard);
         $sniffer->populateTokenListeners();
 
         if (strlen($code)) {
-            $sniffer->processFile($file, $code);
-            return $sniffer->prepareErrorReport($this->showWarnings);
+            $phpcsFile = $sniffer->processFile($file, $code);
+            return array(
+                'totals' => array('warnings' => $phpcsFile->getWarningCount(), 'errors' => $phpcsFile->getErrorCount()),
+                'errors' => $phpcsFile->getErrors(),
+                'warnings' => $phpcsFile->getWarnings(),
+            );
         } else {
-            return array('totals' => array('warnings' => 0, 'errors' => 0), 'files' => array($file => array('messages' => array())));
+            return array('totals' => array('warnings' => 0, 'errors' => 0), 'errors' => array(), 'warnings' => array());
         }
     }
 

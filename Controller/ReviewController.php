@@ -25,25 +25,6 @@ use Whitewashing\ReviewSquawkBundle\Entity\Commit;
 class ReviewController extends Controller
 {
     /**
-     * @param int $projectId
-     * @return \Whitewashing\ReviewSquawkBundle\Entity\Project
-     */
-    private function getProject($projectId)
-    {
-        $project = $this->container->get('doctrine.orm.default_entity_manager')
-                    ->find('Whitewashing\ReviewSquawkBundle\Entity\Project', $projectId);
-        if (!$project) {
-            throw $this->createNotFoundException("No project found!");
-        }
-        $user = $this->container->get('security.context')->getToken()->getUser();
-        if ($user !== $project->getUser()) {
-            throw new AccessDeniedHttpException("Not your own project");
-        }
-
-        return $project;
-    }
-
-    /**
      * Creates a new commit event for the project.
      *
      * Verifies commit really exists and was not indexed before and then queues it into processing.
@@ -96,12 +77,58 @@ class ReviewController extends Controller
     public function newCommitAction($projectId, $commitId)
     {
         $project = $this->getProject($projectId);
+        $currentUser = $this->container->get('security.context')->getToken()->getUser();
+
+        if ($project->getUser() != $currentUser) {
+            throw new AccessDeniedHttpException("Invalid user to review this commit.");
+        }
 
         if ($response = $this->commitExists($project->getId(), $commitId)) {
             return $response;
         }
 
         return array('project' => $project, 'commitId' => $commitId);
+    }
+
+    /**
+     * @Route("/project/{projectId}/review/commits/{commitId}.html", name="rs_review_commit_view")
+     * @Template()
+     * @param $projectId
+     * @param $commitId
+     * @return void
+     */
+    public function getCommitAction($projectId, $commitId)
+    {
+        $project = $this->getProject($projectId);
+        $currentUser = $this->container->get('security.context')->getToken()->getUser();
+
+        if ($project->getUser() != $currentUser) {
+            throw new AccessDeniedHttpException("Invalid user to review this commit.");
+        }
+
+        $client = $this->container->get('whitewashing.review_squawk.github_client');
+        $diffs = $client->getCommitDiffs($project->getRepositoryUrl(), $commitId);
+
+        return array('project' => $project, 'diffs' => $diffs, 'commitId' => $commitId);
+    }
+
+    /**
+     * @param int $projectId
+     * @return \Whitewashing\ReviewSquawkBundle\Entity\Project
+     */
+    private function getProject($projectId)
+    {
+        $project = $this->container->get('doctrine.orm.default_entity_manager')
+                    ->find('Whitewashing\ReviewSquawkBundle\Entity\Project', $projectId);
+        if (!$project) {
+            throw $this->createNotFoundException("No project found!");
+        }
+        $user = $this->container->get('security.context')->getToken()->getUser();
+        if ($user !== $project->getUser()) {
+            throw new AccessDeniedHttpException("Not your own project");
+        }
+
+        return $project;
     }
 
     private function commitExists($projectId, $commitId)

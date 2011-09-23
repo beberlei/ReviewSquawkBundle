@@ -18,17 +18,17 @@ interface ClientAPI
 {
     public function claimOAuthAccessToken($temporaryCode);
 
-    public function getCommitDiffs($username, $repository, $sha1);
+    public function getCommitDiffs($repositoryUrl, $sha1);
 
     /** http://developer.github.com/v3/repos/commits/ */
-    public function commentCommit($accessToken, $username, $repository, $sha1, $path, $line, $position, $message);
+    public function commentCommit($accessToken, $repositoryUrl, $sha1, $path, $line, $position, $message);
 
     /** http://developer.github.com/v3/pulls/comments/ */
-    public function commentPullRequest($accessToken, $username, $repository, $prId, $sha1, $path, $line, $message);
+    public function commentPullRequest($accessToken, $repositoryUrl, $prId, $sha1, $path, $line, $message);
 
     public function getCurrentUser($accessToken);
 
-    public function getProject($username, $repository);
+    public function getProject($repositoryUrl);
 
-    public function getCommits($username, $repository);
+    public function getCommits($repositoryUrl);
 }

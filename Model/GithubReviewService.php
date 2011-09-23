@@ -13,9 +13,17 @@
 
 namespace Whitewashing\ReviewSquawkBundle\Model;
 
+use \Whitewashing\ReviewSquawkBundle\Model\Github\ClientAPI;
+
 class GithubReviewService
 {
+    /**
+     * @var \Whitewashing\ReviewSquawkBundle\Model\Github\ClientAP
+     */
     private $client;
+    /**
+     * @var \Whitewashing\ReviewSquawkBundle\Model\CodeSnifferService
+     */
     private $csService;
 
     public function __construct(ClientAPI $client, CodeSnifferService $csService)
@@ -26,12 +34,7 @@ class GithubReviewService
 
     public function reviewCommit(Project $project, $commitId)
     {
-        $parts = explode("/", $project->getRepositoryUrl);
-        $repository = array_pop($parts);
-        $userOrg = array_pop($parts);
-
-        /** @var $api \Whitewashing\ReviewSquawkBundle\Model\Github\ClientAPI */
-        $diffs = $this->client->getCommitDiffs($userOrg, $repository, $commitId);
+        $diffs = $this->client->getCommitDiffs($project->getRepositoryUrl(), $commitId);
 
         $comments = array();
         $positions = array();

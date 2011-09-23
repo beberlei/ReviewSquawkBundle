@@ -53,6 +53,6 @@ DIFF;
 
         $diff = new Diff("foo.txt", "", "", $diff);
 
-        $this->assertEquals(20, $diff->getDiffPositionForLine(520));
+        $this->assertEquals(20, $diff->getPatchPositionForLine(520));
     }
 }

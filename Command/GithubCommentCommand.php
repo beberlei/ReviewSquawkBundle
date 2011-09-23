@@ -29,11 +29,12 @@ class GithubCommentCommand extends ContainerAwareCommand
             ->setName('review-squawk:github:comment')
             ->setDescription('Create a comment on a commit')
             ->addArgument('access_token', InputArgument::REQUIRED, 'Access Token')
-            ->addArgument('username', InputArgument::REQUIRED, 'User/Organization')
+            ->addArgument('url', InputArgument::REQUIRED, 'Github Url')
             ->addArgument('repo', InputArgument::REQUIRED, 'Repository')
             ->addArgument('sha1', InputArgument::REQUIRED, 'Commit Sha1')
             ->addArgument('path', InputArgument::REQUIRED, 'Path')
             ->addArgument('line', InputArgument::REQUIRED, 'Line')
+            ->addArgument('position', InputArgument::REQUIRED, 'Position in Diff')
             ->addArgument('message', InputArgument::REQUIRED, 'Message')
             ->setHelp(<<<EOT
 The <info>review-squawk:github:comment</info> command creates a commit comment.
@@ -49,12 +50,11 @@ EOT
 
         $api->commentCommit(
             $input->getArgument('access_token'),
-            $input->getArgument('username'),
-            $input->getArgument('repo'),
+            $input->getArgument('url'),
             $input->getArgument('sha1'),
             $input->getArgument('path'),
             $input->getArgument('line'),
-            1,
+            $input->getArgument('position'),
             $input->getArgument('message')
         );
     }

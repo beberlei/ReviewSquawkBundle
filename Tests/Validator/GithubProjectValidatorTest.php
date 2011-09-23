@@ -32,7 +32,7 @@ class GithubProjectValidatorTest extends \PHPUnit_Framework_TestCase
 
         $this->client->expects($this->once())
                      ->method('getProject')
-                     ->with($this->equalTo('beberlei'), $this->equalTo('githubpr_to_jira'))
+                     ->with($this->equalTo($repUrl))
                      ->will($this->returnValue(array('html_url' => $repUrl, 'fork' => false, 'private' => false)));
 
         $this->assertTrue($this->validator->isValid($repUrl, $this->constraint));
@@ -44,7 +44,7 @@ class GithubProjectValidatorTest extends \PHPUnit_Framework_TestCase
 
         $this->client->expects($this->once())
                      ->method('getProject')
-                     ->with($this->equalTo('beberlei'), $this->equalTo('githubpr_to_jira'))
+                     ->with($this->equalTo($repUrl))
                      ->will($this->returnValue(array('html_url' => $repUrl, 'fork' => false, 'private' => true)));
 
         $this->assertFalse($this->validator->isValid($repUrl, $this->constraint));
@@ -56,7 +56,7 @@ class GithubProjectValidatorTest extends \PHPUnit_Framework_TestCase
 
         $this->client->expects($this->once())
                      ->method('getProject')
-                     ->with($this->equalTo('beberlei'), $this->equalTo('githubpr_to_jira'))
+                     ->with($this->equalTo($repUrl))
                      ->will($this->returnValue(array('html_url' => $repUrl, 'fork' => true, 'private' => false)));
 
         $this->assertFalse($this->validator->isValid($repUrl, $this->constraint));
@@ -78,7 +78,7 @@ class GithubProjectValidatorTest extends \PHPUnit_Framework_TestCase
 
         $this->client->expects($this->once())
                      ->method('getProject')
-                     ->with($this->equalTo('beberlei'), $this->equalTo('githubpr_to_jira'))
+                     ->with($this->equalTo($repUrl))
                      ->will($this->throwException(new \RuntimeException("Invalid Request!")));
 
         $this->assertFalse($this->validator->isValid($repUrl, $this->constraint));

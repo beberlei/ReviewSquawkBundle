@@ -28,8 +28,18 @@ class RestV3API implements ClientAPI
         $this->clientSecret = $clientSecret;
     }
 
-    public function commentCommit($accessToken, $username, $repository, $sha1, $path, $line, $position, $message)
+    private function getRepositoryParts($url)
     {
+        $parts = explode("/", $url);
+        $repository = array_pop($parts);
+        $userOrg = array_pop($parts);
+        return array($userOrg, $repository);
+    }
+
+    public function commentCommit($accessToken, $repositoryUrl, $sha1, $path, $line, $position, $message)
+    {
+        list($username, $repository) = $this->getRepositoryParts($repositoryUrl);
+
         $params = array(
             'line' => $line,
             'path' => $path,
@@ -42,7 +52,7 @@ class RestV3API implements ClientAPI
         $this->curl->request('POST', $commentsUrl, $params);
     }
 
-    public function commentPullRequest($accessToken, $username, $repository, $prId, $sha1, $path, $line, $message)
+    public function commentPullRequest($accessToken, $repositoryUrl, $prId, $sha1, $path, $line, $message)
     {
 
     }
@@ -54,8 +64,10 @@ class RestV3API implements ClientAPI
      * @param string $sha1
      * @return Diff
      */
-    public function getCommitDiffs($username, $repository, $sha1)
+    public function getCommitDiffs($repositoryUrl, $sha1)
     {
+        list($username, $repository) = $this->getRepositoryParts($repositoryUrl);
+
         $commitUrl = "https://api.github.com/repos/" . $username . "/" . $repository . "/git/commits/" . $sha1;
         $commitResponse = $this->curl->request('GET', $commitUrl);
 
@@ -81,7 +93,7 @@ class RestV3API implements ClientAPI
             $parentTreeUrl = $commitResponse['body']['tree']['url'];
             $parentTreeResponse = $this->curl->request('GET', $parentTreeUrl . "?recursive=true");
 
-            $compareUrl = "https://api.github.com/repos/" . $username . "/" . $repository . "/compare/" . $sha1 . "..." . $parentSha;
+            $compareUrl = "https://api.github.com/repos/" . $username . "/" . $repository . "/compare/" . $parentSha . "..." .$sha1;
             $compareResponse = $this->curl->request('GET', $compareUrl);
 
             foreach ($parentTreeResponse['body']['tree'] AS $parentTreeFile) {
@@ -137,14 +149,18 @@ class RestV3API implements ClientAPI
         return $response['body'];
     }
 
-    public function getProject($username, $repository)
+    public function getProject($repositoryUrl)
     {
+        list($username, $repository) = $this->getRepositoryParts($repositoryUrl);
+
         $response = $this->curl->request('GET', 'https://api.github.com/repos/'. $username . '/' . $repository);
         return $response['body'];
     }
 
-    public function getCommits($username, $repository)
+    public function getCommits($repositoryUrl)
     {
+        list($username, $repository) = $this->getRepositoryParts($repositoryUrl);
+
         $response = $this->curl->request('GET', 'https://api.github.com/repos/'. $username . '/' . $repository . '/commits');
         return $response['body'];
     }

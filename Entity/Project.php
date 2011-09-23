@@ -89,11 +89,11 @@ class Project
     }
 
     /**
-     *
      * @param string $repositoryUrl
      */
     public function setRepositoryUrl($repositoryUrl)
     {
+        // TODO: Remove github specifices when necessary
         $repositoryUrl = rtrim($repositoryUrl, "/");
         if (strpos($repositoryUrl, "://github.com") !== false) {
             if (substr($repositoryUrl, -4) == ".git") {

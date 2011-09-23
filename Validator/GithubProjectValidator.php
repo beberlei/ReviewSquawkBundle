@@ -54,10 +54,9 @@ class GithubProjectValidator extends ConstraintValidator
             $this->setMessage($constraint->message);
             return false;
         }
-        list($userOrg, $project) = explode("/", ltrim($parts['path'], "/"));
 
         try {
-            $projectDetails = $this->clientApi->getProject($userOrg, $project);
+            $projectDetails = $this->clientApi->getProject($repositoryUrl);
             if (strtolower($projectDetails['html_url']) != strtolower($repositoryUrl)) {
                 $this->setMessage($constraint->message);
 

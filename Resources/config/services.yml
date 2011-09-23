@@ -17,6 +17,6 @@ services:
 
   whitewashing.review_squawk.github_review_service:
     class: Whitewashing\ReviewSquawkBundle\Model\GithubReviewService
-    args:
+    arguments:
       - "@whitewashing.review_squawk.github_client"
       - "@whitewashing.review_squawk.code_sniffer"

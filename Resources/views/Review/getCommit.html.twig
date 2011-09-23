@@ -1,0 +1,21 @@
+{% extends "WhitewashingReviewSquawkBundle::layout.html.twig" %}
+
+{% block content %}
+
+<div class="well">
+    <h2>Commit Diff</h2>
+
+    <p>{{ project.name }} / {{ commitId }}</p>
+</div>
+
+{% for diff in diffs %}
+<div class="well">
+    <h2>{{ diff.path }}</h2>
+
+    <pre>
+    {{ diff.patch }}
+    </pre>
+</div>
+{% endfor %}
+
+{% endblock %}
