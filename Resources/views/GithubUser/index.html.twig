@@ -13,6 +13,9 @@
             <td><a href="{{ path('rs_github_project_show', {'id': project.id}) }}">{{ project.repositoryUrl }}</a></td>
             <td>{{ project.codingStandard }}</td>
         </tr>
+        <tr>
+            <td colspan="2"><input class="post-recieve" type="text" name="post-recieve-hook" value="{{ url('rs_project_github_postrecieve', {'projectId': project.id, 'token': project.token }) }}" /></td>
+        </tr>
     {% endfor %}
     </table>
 
