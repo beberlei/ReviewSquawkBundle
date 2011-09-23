@@ -34,7 +34,8 @@ class ReviewController extends Controller
     {
         $request =  $this->getRequest();
         $em = $this->container->get('doctrine.orm.default_entity_manager');
-        $project = $em->findOneBy(array('token' => $request->get('token')));
+        $project = $em->getRepository('Whitewashing\ReviewSquawkBundle\Entity\Project')
+                ->findOneBy(array('token' => $request->get('token')));
 
         if (!$project || $project->getId() != $projectId) {
             throw $this->createNotFoundException("No project found.");
@@ -46,12 +47,14 @@ class ReviewController extends Controller
 
         $payload = $request->request->get('payload');
         if (strpos($payload, "{") === 0) {
-            $payload = json_encode($payload, true);
+            $payload = json_decode($payload, true);
         } else {
             throw \RuntimeException("Invalid payload given");
         }
 
-        $em = $this->container->get('doctrine.orm.default_entity_manager');
+        /* @var $githubService \Whitewashing\ReviewSquawkBundle\Model\GithubReviewService */
+        $githubService = $this->container->get('whitewashing.review_squawk.github_review_service');
+
         foreach ($payload['commits'] AS $commitData) {
             if ($this->commitExists($project->getId(), $commitData['id'])) {
                 continue;
@@ -59,14 +62,11 @@ class ReviewController extends Controller
 
             $commit = new Commit($commitData['id'], $project, $project->getUser());
             $em->persist($commit);
-            
-            /* @var $githubService \Whitewashing\ReviewSquawkBundle\Model\GithubReviewService */
-            $githubService = $this->container->get('whitewashing.review_squawk.github_review_service');
             $githubService->reviewCommit($project->toProjectStruct(), $commit->getRevision());
         }
         $em->flush();
 
-        return new Response('{"ok": true}', 200);
+        return new Response('{"ok":true}', 200);
     }
 
     /**
