@@ -24,6 +24,11 @@ use Whitewashing\ReviewSquawkBundle\Entity\Commit;
 
 class ReviewController extends Controller
 {
+    public function githubCommitsAction()
+    {
+        
+    }
+
     /**
      * Creates a new commit event for the project.
      *

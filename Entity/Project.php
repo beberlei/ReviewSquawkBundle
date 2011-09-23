@@ -69,7 +69,7 @@ class Project
     protected $showWarnings = true;
 
     /**
-     * @ORM\Column(type="string")
+     * @ORM\Column(type="string", unique=true)
      * @var string
      */
     protected $token;
