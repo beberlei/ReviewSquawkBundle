@@ -68,6 +68,12 @@ class Project
      */
     protected $showWarnings = true;
 
+    /**
+     * @ORM\Column(type="string")
+     * @var string
+     */
+    protected $token;
+
     public function getId()
     {
         return $this->id;
@@ -152,5 +158,10 @@ class Project
     public function hasCommit($revision)
     {
         return isset($this->commits[$revision]);
+    }
+
+    public function generateToken()
+    {
+        $this->token = sha1(microtime(true) . uniqid('', true));
     }
 }

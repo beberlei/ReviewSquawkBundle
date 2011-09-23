@@ -36,6 +36,7 @@ class GithubProjectController extends Controller
 
             if ($projectForm->isValid()) {
                 $project->setUser($this->container->get('security.context')->getToken()->getUser());
+                $project->generateToken();
                 $em = $this->container->get('doctrine.orm.default_entity_manager');
                 $em->persist($project);
                 $em->flush();
