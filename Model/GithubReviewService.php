@@ -42,7 +42,7 @@ class GithubReviewService
             $violations = $this->csService->scan($project, $diff);
 
             foreach ($violations AS $violation) {
-                $position = $diff->getDiffPositionForLine($violation->getLine());
+                $position = $diff->getPatchPositionForLine($violation->getLine());
                 if ($position === false) {
                     continue;
                 }
@@ -59,10 +59,9 @@ class GithubReviewService
         foreach ($comments AS $path => $fileComments) {
             foreach ($fileComments AS $line => $comment) {
                 $this->client->commentCommit(
-                    $project->getUser()->getAccessToken(),
-                    $userOrg,
-                    $repository,
-                    $$commitId,
+                    $project->getAccessToken(),
+                    $project->getRepositoryUrl(),
+                    $commitId,
                     $path,
                     $line,
                     $positions[$path][$line],
